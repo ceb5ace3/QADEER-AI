@@ -1,0 +1,33 @@
+name: CI - Run Node.js App Temporarily
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-node:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start app with PM2
+        run: |
+          npm install -g pm2
+          pm2 start npm --name my-app -- start
+          pm2 logs --lines 10
+          sleep 6000  # Keep alive for 1 minute
+
+      - name: Stop PM2
+        if: always()
+        run: pm2 stop all
